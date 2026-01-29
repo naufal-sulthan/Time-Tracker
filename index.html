@@ -1,9 +1,15 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Time Tracker</title>
+    <title>Time Tracker - Analytics</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -11,72 +17,147 @@
 </head>
 <body>
 
-<div class="container text-center" style="max-width: 900px;">
+<div class="bg-shape shape-1"></div>
+<div class="bg-shape shape-2"></div>
 
-    <div id="loginSection" class="card p-5 mt-5">
-        <h1 class="mb-3">⏱️ Pro Time Tracker</h1>
-        <p class="text-muted mb-4">Catat waktu kerja Anda dengan aman dan terintegrasi Cloud.</p>
-        <div>
-            <button id="btnLogin" class="btn btn-primary btn-lg btn-custom shadow">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" style="margin-right:10px; background:white; border-radius:50%;">
-                Login dengan Google
-            </button>
-        </div>
+<div class="container main-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 pt-3 glass-header">
+        <h4 class="m-0 fw-bold title-app d-flex align-items-center">
+            <i class="ph-bold ph-chart-polar me-2"></i> TimeTracker.
+        </h4>
+        <button id="themeToggle" class="btn btn-icon">
+            <i class="ph-bold ph-moon"></i>
+        </button>
+    </div>
+
+    <div id="loginSection" class="text-center glass-card p-5 mt-5">
+        <h1 class="mb-3 fw-bold">Selamat Datang</h1>
+        <p class="opacity-75 mb-4">Analisis produktivitas Anda dengan data visual.</p>
+        <button id="btnLogin" class="btn btn-primary btn-lg btn-glow">
+            <i class="ph-bold ph-google-logo me-2"></i> Login dengan Google
+        </button>
     </div>
 
     <div id="appSection" class="hidden">
         
-        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
-            <div class="user-info">👤 Halo, <span id="userName">User</span></div>
-            <button id="btnLogout" class="btn btn-outline-danger btn-sm">Logout</button>
-        </div>
-
-        <div class="card p-4 mb-4 text-center">
+        <div class="bento-grid">
             
-            <div class="row g-2 mb-3 justify-content-center">
-                <div class="col-md-5">
-                    <input type="text" id="taskInput" class="form-control" placeholder="Apa yang Anda kerjakan? (Cth: Fix Bug)">
+            <div class="glass-card bento-profile d-flex justify-content-between align-items-center px-4">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-placeholder me-3">
+                        <i class="ph-bold ph-user" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <small class="opacity-75">Halo, Creator</small>
+                        <h5 class="m-0 fw-bold" id="userName">User</h5>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <select id="categoryInput" class="form-select">
-                        <option value="Coding">💻 Coding</option>
-                        <option value="Belajar">📚 Belajar</option>
-                        <option value="Meeting">🗣️ Meeting</option>
-                        <option value="Desain">🎨 Desain</option>
-                        <option value="Lainnya">etc Lainnya</option>
-                    </select>
+                <button id="btnLogout" class="btn btn-sm btn-outline-danger-custom" title="Keluar">
+                    <i class="ph-bold ph-sign-out" style="font-size: 1.2rem;"></i>
+                </button>
+            </div>
+
+            <div class="glass-card bento-timer text-center p-4">
+                <div class="status-badge mb-3"><span id="statusText">Mode Pencatatan</span></div>
+                
+                <div class="input-group-custom mb-4 text-start">
+                    
+                    <label class="small opacity-75 mb-1 ms-1">Tanggal & Kegiatan</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <input type="date" id="dateInput" class="glass-input" style="flex: 1;">
+                        <select id="categoryInput" class="glass-input" style="flex: 1;">
+                            <option value="Coding">💻 Coding</option>
+                            <option value="Belajar">📚 Belajar</option>
+                            <option value="Meeting">🗣️ Meeting</option>
+                            <option value="Desain">🎨 Desain</option>
+                            <option value="Lainnya">etc Lainnya</option>
+                        </select>
+                    </div>
+
+                    <input type="text" id="taskInput" class="glass-input" placeholder="Apa yang dikerjakan? (Cth: Fix Bug)">
+                </div>
+
+                <div id="timer" class="timer-display">00:00:00</div>
+                
+                <div class="mt-4 action-buttons d-flex gap-2 justify-content-center">
+                    <button id="btnStart" class="btn btn-play w-100">
+                        <i class="ph-fill ph-play-circle" style="vertical-align: middle;"></i> Mulai Timer
+                    </button>
+                    <button id="btnStop" class="btn btn-stop w-100 hidden">
+                        <i class="ph-fill ph-stop-circle" style="vertical-align: middle;"></i> Selesai
+                    </button>
+                    </div>
+            </div>
+
+            <div class="glass-card bento-stats p-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="ph-bold ph-chart-pie-slice me-2"></i> Analisis
+                </h5>
+                <div class="row h-100">
+                    <div class="col-md-6 d-flex flex-column align-items-center mb-3 mb-md-0">
+                        <small class="opacity-75 mb-2">Distribusi Kategori</small>
+                        <div style="position: relative; height:200px; width:100%;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex flex-column align-items-center">
+                        <small class="opacity-75 mb-2">Tren Produktivitas (7 Hari)</small>
+                        <div style="position: relative; height:200px; width:100%;">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="timer" class="timer-display">00:00:00</div>
-            
-            <div class="mt-4">
-                <button id="btnStart" class="btn btn-success btn-lg btn-custom mx-2">▶ Mulai</button>
-                <button id="btnStop" class="btn btn-danger btn-lg btn-custom mx-2 hidden">⏹ Berhenti</button>
-            </div>
-            <div id="statusText" class="text-muted mt-3 small">Isi kegiatan lalu tekan Mulai</div>
-        </div>
-
-        <div class="card p-4 text-start">
-            <h5 class="mb-3">📅 Riwayat Aktivitas Anda</h5>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Kegiatan</th> <th>Kategori</th> <th>Mulai - Selesai</th>
-                            <th>Durasi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logBody">
-                        </tbody>
-                </table>
+            <div class="glass-card bento-history p-4">
+                <h5 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="ph-bold ph-clock-counter-clockwise me-2"></i> Riwayat
+                </h5>
+                <div class="history-scroll">
+                    <table class="table table-borderless custom-table">
+                        <tbody id="logBody">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
 </div>
 
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-modal">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">Edit Kegiatan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-start">
+        <input type="hidden" id="editDocId">
+        <div class="mb-3">
+            <label class="form-label opacity-75">Nama Kegiatan</label>
+            <input type="text" class="form-control glass-input-dark" id="editTaskInput">
+        </div>
+        <div class="mb-3">
+            <label class="form-label opacity-75">Kategori</label>
+            <select class="form-select glass-input-dark" id="editCategoryInput">
+                <option value="Coding">💻 Coding</option>
+                <option value="Belajar">📚 Belajar</option>
+                <option value="Meeting">🗣️ Meeting</option>
+                <option value="Desain">🎨 Desain</option>
+                <option value="Lainnya">etc Lainnya</option>
+            </select>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnSaveChanges">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module" src="script.js"></script>
 
 </body>
