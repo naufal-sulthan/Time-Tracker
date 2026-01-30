@@ -2,201 +2,236 @@
    1. VARIABLES & THEME (LIGHT/DARK)
    ========================================= */
 :root {
-    /* Default Light Mode */
-    --bg-color: #e0e5ec;
-    --text-color: #2d3436;
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --input-bg: rgba(255, 255, 255, 0.8);
-    --accent-color: #4e54c8;
-    --shape-1: #8f94fb;
-    --shape-2: #4e54c8;
-    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    /* Font Setting */
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+
+    /* Light Mode (Corporate Clean) */
+    --bg-color: #f3f4f6;
+    --text-color: #1f2937;
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --primary-color: #0d6efd; /* Bootstrap Blue */
+    --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="dark"] {
-    /* Dark Mode Override */
-    --bg-color: #1a1a2e;
-    --text-color: #ffffff;
-    --glass-bg: rgba(22, 33, 62, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --input-bg: rgba(0, 0, 0, 0.3);
-    --accent-color: #e94560;
-    --shape-1: #0f3460;
-    --shape-2: #e94560;
-    --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    /* Dark Mode (Professional Dark) */
+    --bg-color: #0f172a;
+    --text-color: #f8fafc;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --primary-color: #3b82f6;
+    --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
 }
 
 /* =========================================
-   2. GLOBAL RESET & ANIMATION
+   2. GLOBAL RESET
    ========================================= */
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-main);
     min-height: 100vh;
     transition: background-color 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
     padding-bottom: 50px;
+    -webkit-font-smoothing: antialiased; /* Teks lebih tajam di Mac/iOS */
 }
 
-/* Background Blobs */
+/* Background Blobs (Lebih Subtle/Halus) */
 .bg-shape {
     position: fixed;
     border-radius: 50%;
-    filter: blur(80px);
+    filter: blur(100px);
     z-index: -1;
-    animation: float 10s infinite alternate;
+    opacity: 0.6; /* Tidak terlalu mencolok */
 }
-.shape-1 { width: 300px; height: 300px; background: var(--shape-1); top: -50px; left: -50px; }
-.shape-2 { width: 400px; height: 400px; background: var(--shape-2); bottom: -100px; right: -100px; animation-delay: 2s; }
-
-@keyframes float { 
-    0% { transform: translate(0, 0); } 
-    100% { transform: translate(30px, 50px); } 
-}
+.shape-1 { width: 400px; height: 400px; background: var(--primary-color); top: -100px; left: -100px; }
+.shape-2 { width: 300px; height: 300px; background: #6366f1; bottom: -50px; right: -50px; }
 
 /* =========================================
    3. GLASSMORPHISM COMPONENTS
    ========================================= */
 .glass-card, .glass-modal, .glass-header {
     background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: 24px;
+    border-radius: 20px;
     box-shadow: var(--shadow);
-    transition: all 0.3s ease;
 }
 
-.title-app {
-    color: var(--text-color);
+.glass-header {
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 /* =========================================
-   4. BENTO GRID LAYOUT (UPDATED!)
+   4. INPUTS & FORM (PROFESSIONAL STYLE)
+   ========================================= */
+/* Wrapper untuk Icon di dalam Input */
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color);
+    opacity: 0.5;
+    font-size: 1.2rem;
+    pointer-events: none; /* Agar klik tembus ke input */
+    z-index: 2;
+}
+
+.glass-input, .glass-input-dark, .form-select, .form-control {
+    width: 100%;
+    border: 1px solid transparent;
+    background: var(--input-bg);
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: var(--text-color);
+    outline: none;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Efek Fokus: Border Biru Halus */
+.glass-input:focus, .form-select:focus, .form-control:focus {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    border-color: var(--primary-color);
+    background: var(--glass-bg);
+}
+
+/* Padding khusus jika ada icon di kiri */
+.glass-input.ps-5 {
+    padding-left: 48px !important;
+}
+
+/* Fix Ikon Kalender di Dark Mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.5;
+    filter: invert(var(--dark-invert)); 
+}
+[data-theme="dark"] { --dark-invert: 1; }
+[data-theme="light"] { --dark-invert: 0; }
+
+/* =========================================
+   5. BENTO GRID LAYOUT
    ========================================= */
 .bento-grid {
     display: grid;
-    grid-template-columns: 1fr; /* Mobile: 1 Kolom ke bawah */
-    gap: 20px;
+    grid-template-columns: 1fr;
+    gap: 24px;
 }
 
-/* Desktop Layout (> 992px) */
 @media (min-width: 992px) {
     .bento-grid {
-        /* Kiri (Input+Stats): 1.3 bagian | Kanan (History): 1 bagian */
-        grid-template-columns: 1.3fr 1fr; 
-        /* Baris otomatis sesuai konten */
-        grid-template-rows: auto auto auto; 
+        grid-template-columns: 1.4fr 1fr; /* Kiri lebih lebar */
+        grid-template-rows: auto auto auto;
     }
-
-    /* Posisi Grid */
     .bento-profile { grid-column: 1 / 2; }
     .bento-timer   { grid-column: 1 / 2; }
-    .bento-stats   { grid-column: 1 / 2; } /* Kartu Grafik Baru */
+    .bento-stats   { grid-column: 1 / 2; }
     
     .bento-history { 
         grid-column: 2 / 3; 
-        grid-row: 1 / 4; /* Memanjang dari atas sampai bawah */
-        max-height: 85vh; /* Batasi tinggi agar bisa discroll */
-        overflow-hidden: hidden; /* Scroll diurus child element */
+        grid-row: 1 / 4; 
+        max-height: 85vh; 
         display: flex;
         flex-direction: column;
     }
 }
 
 /* =========================================
-   5. INPUTS & DATE PICKER
+   6. UI COMPONENTS
    ========================================= */
-.glass-input, .glass-input-dark {
-    width: 100%;
-    border: none;
-    background: var(--input-bg);
-    padding: 12px 15px;
-    border-radius: 12px;
-    color: var(--text-color);
-    outline: none;
-    transition: 0.3s;
-    font-family: inherit;
+/* Tab Switcher (Timer vs Manual) */
+.btn-tab-active {
+    background: white !important;
+    color: black !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
-.glass-input:focus { box-shadow: 0 0 0 2px var(--accent-color); }
-
-/* Fix Ikon Kalender di Dark Mode */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0.6;
-    transition: 0.3s;
-}
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
-}
-[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1); /* Ubah ikon jadi putih saat dark mode */
+[data-theme="dark"] .btn-tab-active {
+    background: #334155 !important;
+    color: white !important;
 }
 
-/* =========================================
-   6. COMPONENT STYLING
-   ========================================= */
-/* Timer */
+/* Timer Display */
 .timer-display {
-    font-size: 4rem;
-    font-weight: 800;
+    font-size: 4.5rem;
+    font-weight: 700;
     letter-spacing: -2px;
-    font-variant-numeric: tabular-nums;
-    margin: 15px 0;
+    font-variant-numeric: tabular-nums; /* Agar angka tidak goyang */
+    line-height: 1;
+    margin: 20px 0;
+    background: linear-gradient(135deg, var(--text-color) 0%, rgba(128,128,128,0.5) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 /* Buttons */
-.btn-play { background: var(--accent-color); color: white; padding: 12px; border-radius: 12px; font-weight: bold; border: none; transition: transform 0.2s; }
-.btn-stop { background: #ff4757; color: white; padding: 12px; border-radius: 12px; font-weight: bold; border: none; transition: transform 0.2s; }
-.btn-play:hover, .btn-stop:hover { opacity: 0.9; transform: scale(0.98); color: white; }
+.btn-play, .btn-stop, .btn-primary {
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+}
+.btn-play { background: var(--primary-color); color: white; }
+.btn-stop { background: #dc3545; color: white; }
+.btn-play:hover, .btn-stop:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
 .btn-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
     background: var(--input-bg);
     color: var(--text-color);
-    border-radius: 50%;
-    width: 45px; height: 45px;
-    border: 1px solid var(--glass-border);
     display: flex; align-items: center; justify-content: center;
 }
 
 /* Table & Scroll */
 .history-scroll {
     overflow-y: auto;
-    flex-grow: 1; /* Isi sisa ruang kosong */
+    flex-grow: 1;
     padding-right: 5px;
-    max-height: 500px; /* Fallback height untuk mobile */
+    /* Scrollbar halus */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }
 
-@media (min-width: 992px) {
-    .history-scroll { max-height: none; } /* Desktop ikut tinggi parent */
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(128,128,128, 0.3); border-radius: 10px; }
-
-.custom-table { color: var(--text-color); }
-.custom-table td { padding: 15px 0; border-bottom: 1px solid rgba(128,128,128, 0.1); }
+.custom-table { color: var(--text-color); margin-top: 10px; }
+.custom-table td { padding: 16px 0; border-bottom: 1px solid rgba(128,128,128, 0.1); }
 .custom-table tr:last-child td { border-bottom: none; }
 
 /* Utilities */
 .hidden { display: none !important; }
-.opacity-75 { opacity: 0.75; }
 .avatar-placeholder { 
-    width: 40px; height: 40px; 
-    background: var(--accent-color); 
+    width: 48px; height: 48px; 
+    background: linear-gradient(135deg, var(--primary-color), #818cf8); 
     color: white; 
-    border-radius: 12px; 
+    border-radius: 14px; 
     display: flex; align-items: center; justify-content: center; 
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
 }
-.status-badge { 
-    display: inline-block;
-    padding: 5px 15px;
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
     background: rgba(128,128,128,0.1);
-    border-radius: 20px;
-    font-weight: 600; 
-    font-size: 0.8rem; 
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
 }
