@@ -300,6 +300,7 @@ function loadLogs(userId) {
             else if(data.category === "Desain") badgeClass = "bg-danger";
 
             // Render Baris Tabel
+            // UPDATE PENTING: Menambahkan data-start dan data-end ke tombol Edit
             const row = `
             <tr>
                 <td>
@@ -316,7 +317,12 @@ function loadLogs(userId) {
                     </div>
                     <div class="mt-2 text-end border-top pt-2 mt-2" style="border-color: rgba(0,0,0,0.05) !important;">
                         <button class="btn btn-sm btn-link text-decoration-none p-0 me-3 btn-edit text-secondary" 
-                            data-id="${docId}" data-task="${data.task}" data-cat="${data.category}" style="font-size: 0.85rem;">
+                            data-id="${docId}" 
+                            data-task="${data.task}" 
+                            data-cat="${data.category}" 
+                            data-start="${data.start}" 
+                            data-end="${data.end}"
+                            style="font-size: 0.85rem;">
                             <i class="ph-bold ph-pencil-simple me-1"></i> Edit
                         </button>
                         <button class="btn btn-sm btn-link text-decoration-none p-0 btn-delete text-danger" 
@@ -335,7 +341,7 @@ function loadLogs(userId) {
 }
 
 // ============================================================
-// 9. UPDATE GRAFIK (CHART.JS) - BAGIAN INI DIPERBARUI
+// 9. UPDATE GRAFIK (CHART.JS)
 // ============================================================
 function updateCharts(logs) {
     // A. Data Donut (Distribusi Kategori)
@@ -406,7 +412,7 @@ function updateCharts(logs) {
     if (trendChartInstance) trendChartInstance.destroy();
 
     trendChartInstance = new Chart(ctxTrend, {
-        type: 'bar', // UBAH JADI GRAFIK BATANG
+        type: 'bar', // Grafik Batang
         data: {
             labels: labelsData,
             datasets: [{
@@ -442,9 +448,10 @@ function updateCharts(logs) {
 }
 
 // ============================================================
-// 10. EDIT & HAPUS DATA (CRUD)
+// 10. EDIT & HAPUS DATA (CRUD) - DIPERBARUI
 // ============================================================
 document.getElementById('logBody').addEventListener('click', (e) => {
+    // Tombol Hapus
     if (e.target.closest('.btn-delete')) {
         const btn = e.target.closest('.btn-delete');
         const id = btn.getAttribute('data-id');
@@ -452,22 +459,79 @@ document.getElementById('logBody').addEventListener('click', (e) => {
             deleteDoc(doc(db, "logs", id)).catch(err => alert("Gagal hapus: " + err.message));
         }
     }
+    // Tombol Edit (POPULATE MODAL DENGAN DATA WAKTU)
     if (e.target.closest('.btn-edit')) {
         const btn = e.target.closest('.btn-edit');
         const id = btn.getAttribute('data-id');
+        
+        // Isi Form Nama & Kategori
         document.getElementById('editDocId').value = id;
         document.getElementById('editTaskInput').value = btn.getAttribute('data-task');
         document.getElementById('editCategoryInput').value = btn.getAttribute('data-cat');
+        
+        // Ambil data Start & End
+        const startTimeStr = btn.getAttribute('data-start');
+        const endTimeStr = btn.getAttribute('data-end');
+
+        // Parsing Waktu untuk Input HTML
+        const startDate = new Date(startTimeStr);
+        const endDate = new Date(endTimeStr);
+        
+        // Format YYYY-MM-DD untuk input tipe Date
+        const yyyy = startDate.getFullYear();
+        const mm = String(startDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(startDate.getDate()).padStart(2, '0');
+        document.getElementById('editDateInput').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Format HH:MM untuk input tipe Time
+        const startH = String(startDate.getHours()).padStart(2, '0');
+        const startM = String(startDate.getMinutes()).padStart(2, '0');
+        document.getElementById('editStartTime').value = `${startH}:${startM}`;
+        
+        const endH = String(endDate.getHours()).padStart(2, '0');
+        const endM = String(endDate.getMinutes()).padStart(2, '0');
+        document.getElementById('editEndTime').value = `${endH}:${endM}`;
+
         editModal.show();
     }
 });
 
+// SIMPAN PERUBAHAN (MENGHITUNG ULANG DURASI)
 document.getElementById('btnSaveChanges').addEventListener('click', async () => {
     const id = document.getElementById('editDocId').value;
+    const newTask = document.getElementById('editTaskInput').value;
+    const newCat = document.getElementById('editCategoryInput').value;
+    
+    // Ambil nilai Waktu Baru
+    const dateVal = document.getElementById('editDateInput').value;
+    const startVal = document.getElementById('editStartTime').value;
+    const endVal = document.getElementById('editEndTime').value;
+
+    if (!newTask || !dateVal || !startVal || !endVal) {
+        alert("Nama kegiatan dan waktu tidak boleh kosong.");
+        return;
+    }
+
+    // Gabungkan Tanggal + Jam menjadi Date Object
+    const newStart = new Date(`${dateVal}T${startVal}`);
+    const newEnd = new Date(`${dateVal}T${endVal}`);
+
+    // Validasi: Selesai tidak boleh sebelum Mulai
+    if (newEnd <= newStart) {
+        alert("Waktu Selesai harus lebih besar dari Waktu Mulai.");
+        return;
+    }
+
+    // Hitung Durasi Baru (Detik)
+    const newDuration = Math.floor((newEnd - newStart) / 1000);
+
     try {
         await updateDoc(doc(db, "logs", id), {
-            task: document.getElementById('editTaskInput').value,
-            category: document.getElementById('editCategoryInput').value
+            task: newTask,
+            category: newCat,
+            start: newStart.toISOString(),
+            end: newEnd.toISOString(),
+            duration: newDuration
         });
         editModal.hide();
     } catch (e) {
