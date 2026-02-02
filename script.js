@@ -215,7 +215,6 @@ async function saveDataToFirebase(durationSec, isTimer) {
     const dateInput = document.getElementById('dateInput');
     
     // Hitung Waktu Mulai & Selesai
-    // Kita gunakan tanggal yang dipilih user, tapi jamnya pakai jam saat ini
     const selectedDate = new Date(dateInput.value);
     const now = new Date();
     selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
@@ -293,14 +292,14 @@ function loadLogs(userId) {
             const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
             const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-            // Tentukan Warna Badge Kategori (Tanpa Emoji)
-            let badgeClass = "bg-secondary"; // Default Abu-abu
-            if(data.category === "Coding") badgeClass = "bg-primary";       // Biru
-            else if(data.category === "Belajar") badgeClass = "bg-success"; // Hijau
-            else if(data.category === "Meeting") badgeClass = "bg-warning text-dark"; // Kuning
-            else if(data.category === "Desain") badgeClass = "bg-danger";   // Merah
+            // Tentukan Warna Badge Kategori
+            let badgeClass = "bg-secondary";
+            if(data.category === "Coding") badgeClass = "bg-primary";
+            else if(data.category === "Belajar") badgeClass = "bg-success";
+            else if(data.category === "Meeting") badgeClass = "bg-warning text-dark";
+            else if(data.category === "Desain") badgeClass = "bg-danger";
 
-            // Render Baris Tabel (Profesional Style)
+            // Render Baris Tabel
             const row = `
             <tr>
                 <td>
@@ -308,7 +307,6 @@ function loadLogs(userId) {
                         <span class="fw-bold text-dark">${data.task || '(Tanpa Nama)'}</span>
                         <span class="badge ${badgeClass} rounded-1 fw-normal" style="font-size:0.75rem; letter-spacing:0.5px;">${data.category}</span>
                     </div>
-                    
                     <div class="d-flex justify-content-between align-items-center opacity-75 small">
                         <div class="d-flex align-items-center">
                             <i class="ph-bold ph-calendar-blank me-2"></i>
@@ -316,7 +314,6 @@ function loadLogs(userId) {
                         </div>
                         <span class="fw-bold text-primary">${durationText}</span>
                     </div>
-                    
                     <div class="mt-2 text-end border-top pt-2 mt-2" style="border-color: rgba(0,0,0,0.05) !important;">
                         <button class="btn btn-sm btn-link text-decoration-none p-0 me-3 btn-edit text-secondary" 
                             data-id="${docId}" data-task="${data.task}" data-cat="${data.category}" style="font-size: 0.85rem;">
@@ -338,7 +335,7 @@ function loadLogs(userId) {
 }
 
 // ============================================================
-// 9. UPDATE GRAFIK (CHART.JS)
+// 9. UPDATE GRAFIK (CHART.JS) - BAGIAN INI DIPERBARUI
 // ============================================================
 function updateCharts(logs) {
     // A. Data Donut (Distribusi Kategori)
@@ -355,16 +352,10 @@ function updateCharts(logs) {
         }
     });
 
-    // Warna yang SAMA dengan Badge di Tabel
     const chartColors = [
-        '#0d6efd', // Coding (Primary Blue)
-        '#198754', // Belajar (Success Green)
-        '#ffc107', // Meeting (Warning Yellow)
-        '#dc3545', // Desain (Danger Red)
-        '#6c757d'  // Lainnya (Secondary Gray)
+        '#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d'
     ];
 
-    // Render Donut Chart
     const ctxCat = document.getElementById('categoryChart');
     if (categoryChartInstance) categoryChartInstance.destroy();
     
@@ -382,14 +373,12 @@ function updateCharts(logs) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false } // Sembunyikan legenda agar bersih
-            },
-            cutout: '70%' // Lubang tengah donat
+            plugins: { legend: { display: false } },
+            cutout: '70%'
         }
     });
 
-    // B. Data Line (Tren 7 Hari)
+    // B. Data Harian (BAR CHART - 7 Hari Terakhir)
     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const trendData = Array(7).fill(0);
     const labelsData = [];
@@ -400,43 +389,54 @@ function updateCharts(logs) {
         labelsData.push(days[d.getDay()]); // Label Hari
         
         const dateString = d.toISOString().split('T')[0];
-        let dailyTotal = 0;
+        let dailySeconds = 0;
         
         logs.forEach(log => {
             if(log.start && new Date(log.start).toISOString().startsWith(dateString)) {
-                dailyTotal += log.duration;
+                dailySeconds += log.duration;
             }
         });
-        trendData[6 - i] = (dailyTotal / 60).toFixed(1); // Menit
+        
+        // KONVERSI KE JAM (Format: 1.5 jam)
+        const hours = dailySeconds / 3600;
+        trendData[6 - i] = hours.toFixed(1); 
     }
 
-    // Render Line Chart
     const ctxTrend = document.getElementById('trendChart');
     if (trendChartInstance) trendChartInstance.destroy();
 
     trendChartInstance = new Chart(ctxTrend, {
-        type: 'line',
+        type: 'bar', // UBAH JADI GRAFIK BATANG
         data: {
             labels: labelsData,
             datasets: [{
-                label: 'Menit',
+                label: 'Jam Kerja',
                 data: trendData,
-                borderColor: '#0d6efd', // Garis Biru Profesional
-                backgroundColor: 'rgba(13, 110, 253, 0.1)', // Arsir Biru Transparan
-                fill: true,
-                tension: 0.3, // Kelengkungan garis halus
-                pointRadius: 3,
-                borderWidth: 2
+                backgroundColor: '#0d6efd', // Warna Biru Solid
+                borderRadius: 4, // Sudut Batang Membulat
+                barPercentage: 0.6 // Lebar Batang
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { display: false }, // Sembunyikan sumbu Y agar bersih
+                y: { 
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return value + ' j'; } } // Label sumbu Y: "1 j"
+                }, 
                 x: { grid: { display: false } }
             },
-            plugins: { legend: { display: false } }
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw + ' Jam';
+                        }
+                    }
+                }
+            }
         }
     });
 }
@@ -444,9 +444,7 @@ function updateCharts(logs) {
 // ============================================================
 // 10. EDIT & HAPUS DATA (CRUD)
 // ============================================================
-// Event Delegation (Menangani klik tombol di dalam tabel)
 document.getElementById('logBody').addEventListener('click', (e) => {
-    // Tombol Hapus
     if (e.target.closest('.btn-delete')) {
         const btn = e.target.closest('.btn-delete');
         const id = btn.getAttribute('data-id');
@@ -454,35 +452,22 @@ document.getElementById('logBody').addEventListener('click', (e) => {
             deleteDoc(doc(db, "logs", id)).catch(err => alert("Gagal hapus: " + err.message));
         }
     }
-    // Tombol Edit
     if (e.target.closest('.btn-edit')) {
         const btn = e.target.closest('.btn-edit');
         const id = btn.getAttribute('data-id');
-        
-        // Isi Form Modal
         document.getElementById('editDocId').value = id;
         document.getElementById('editTaskInput').value = btn.getAttribute('data-task');
         document.getElementById('editCategoryInput').value = btn.getAttribute('data-cat');
-        
         editModal.show();
     }
 });
 
-// Simpan Perubahan (Tombol di Modal)
 document.getElementById('btnSaveChanges').addEventListener('click', async () => {
     const id = document.getElementById('editDocId').value;
-    const newTask = document.getElementById('editTaskInput').value;
-    const newCat = document.getElementById('editCategoryInput').value;
-
-    if (newTask.trim() === "") {
-        alert("Nama kegiatan tidak boleh kosong.");
-        return;
-    }
-
     try {
         await updateDoc(doc(db, "logs", id), {
-            task: newTask,
-            category: newCat
+            task: document.getElementById('editTaskInput').value,
+            category: document.getElementById('editCategoryInput').value
         });
         editModal.hide();
     } catch (e) {
